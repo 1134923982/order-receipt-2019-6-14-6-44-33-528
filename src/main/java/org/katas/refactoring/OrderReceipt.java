@@ -50,13 +50,14 @@ public class OrderReceipt {
     }
 
     private void printLineItem(StringBuilder output, LineItem lineItem) {
-        output.append(lineItem.getDescription());
-        output.append('\t');
-        output.append(lineItem.getPrice());
-        output.append('\t');
-        output.append(lineItem.getQuantity());
-        output.append('\t');
-        output.append(lineItem.totalAmount());
-        output.append('\n');
+        printLineItemColumn(output, lineItem.getDescription(), "\t");
+        printLineItemColumn(output, lineItem.getPrice()+"", "\t");
+        printLineItemColumn(output, lineItem.getQuantity()+"", "\t");
+        printLineItemColumn(output, lineItem.totalAmount()+"", "\n");
+    }
+
+    private void printLineItemColumn(StringBuilder output, String content, String footer) {
+        output.append(content);
+        output.append(footer);
     }
 }
