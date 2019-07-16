@@ -1,5 +1,7 @@
 package org.katas.refactoring;
 
+import java.text.MessageFormat;
+
 /**
  * OrderReceipt prints the details of order including customer name, address, description, quantity,
  * price and amount. It also calculates the sales tax @ 10% and prints as part
@@ -14,50 +16,39 @@ public class OrderReceipt {
     }
 
     public String printReceipt() {
-        StringBuilder output = new StringBuilder("======Printing Orders======\n");
+        final  String customerName = order.getCustomerName();
+        final  String customerAddress = order.getCustomerAddress();
+        final double taxRate = .10;
+        final double totalSalesTax = getTotalAmount()*taxRate;
+        final double totalAmountWithTax = getTotalAmount()+getTotalSalesTx();
 
-
-        output.append(order.getCustomerName());
-        output.append(order.getCustomerAddress());
-
-        double totalSalesTx = 0d;
-        double total = 0d;
-        for (LineItem lineItem : order.getLineItems()) {
-            printLineItem(output, lineItem);
-        }
-        totalSalesTx = getTotalSalesTx();
-        total = getTotal();
-        printsTheStateColumn(output, totalSalesTx, "Sales Tax");
-
-        printsTheStateColumn(output, total, "Total Amount");
-        return output.toString();
+        return print(customerName,customerAddress,getLineItemsAsString(),totalSalesTax,totalAmountWithTax);
     }
 
-    private double getTotal() {
-        double total;
-        total = order.getLineItems().stream().mapToDouble(x->x.totalAmount()+x.totalAmount()*.10).sum();
-        return total;
+    private String print(String customerName, String customerAddress, String lineItemsAsString, double totalSalesTax, double totalAmountWithTax) {
+        final String printReceiptFormat = "======Printing Orders======\n{0}{1}{2}\nSales Tax\t{3}Total Amount\t{4}";
+        return MessageFormat.format(printReceiptFormat,
+                customerName,
+                customerAddress,
+                lineItemsAsString,
+                totalSalesTax,
+                totalAmountWithTax);
+    }
+
+
+    private String getLineItemsAsString(){
+        String lineItemsFormat = "%s\t%.1f\t%d\t%.1f";
+        return order.getLineItems().stream().map(lineItem ->
+                String.format(lineItemsFormat,lineItem.getDescription(),lineItem.getPrice(),lineItem.getQuantity(),lineItem.calculateAmount()))
+                .reduce("",(result,element)->result+element+"\n");
+    }
+
+    private double getTotalAmount() {
+        return order.getLineItems().stream().mapToDouble(x->x.calculateAmount()).sum();
     }
 
     private double getTotalSalesTx() {
-        double totalSalesTx;
-        totalSalesTx = order.getLineItems().stream().mapToDouble(x -> x.totalAmount() * .10).sum();
-        return totalSalesTx;
+        return order.getLineItems().stream().mapToDouble(x -> x.calculateAmount() * .10).sum();
     }
 
-    private void printsTheStateColumn(StringBuilder output, double totalSalesTx, String s) {
-        output.append(s).append('\t').append(totalSalesTx);
-    }
-
-    private void printLineItem(StringBuilder output, LineItem lineItem) {
-        printLineItemColumn(output, lineItem.getDescription(), "\t");
-        printLineItemColumn(output, lineItem.getPrice()+"", "\t");
-        printLineItemColumn(output, lineItem.getQuantity()+"", "\t");
-        printLineItemColumn(output, lineItem.totalAmount()+"", "\n");
-    }
-
-    private void printLineItemColumn(StringBuilder output, String content, String footer) {
-        output.append(content);
-        output.append(footer);
-    }
 }
